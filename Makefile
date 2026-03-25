@@ -1,12 +1,19 @@
+# Makefile
+# 
+# Copyright (C) 2026 James Petersen <m@jamespetersen.ca>
+# Licensed under MIT. See LICENSE.
 
-IN_PACKAGE := jpdv.pdf jpdv.sty LICENSE
+IN_PACKAGE := quickderivs.sty quickderivs-doc.pdf quickderivs-doc.tex LICENSE README.md
 
-default: jpdv.tar.gz
+default: quickderivs.tar.gz
 
-jpdv.pdf: jpdv.ltx jpdv.sty
+quickderivs-doc.pdf: quickderivs-doc.tex quickderivs.sty
 	pdflatex $<
 
-jpdv.tar.gz: $(IN_PACKAGE)
-	tar czf $@ $^
+quickderivs.tar.gz: $(IN_PACKAGE)
+	rm -r quickderivs >/dev/null 2>&1 || true
+	mkdir quickderivs
+	cp $(IN_PACKAGE) quickderivs
+	tar czvf $@ quickderivs
 
-.PHONE: default
+.PHONY: default

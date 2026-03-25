@@ -1,0 +1,338 @@
+% quickderivs.sty
+%
+% Copyright (C) 2026 James Petersen <m@jamespetersen.ca>
+% Licensed under MIT. See LICENSE.
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{quickderivs}[2026-03-25 v0.1.1 Derivatives and Differentials]
+
+\newif\ifquickderivs@upright
+\newif\ifquickderivs@defp
+\quickderivs@defpfalse
+\quickderivs@uprightfalse
+\DeclareOption{upright}{\quickderivs@uprighttrue}
+\DeclareOption{partial}{\quickderivs@defptrue}
+\ProcessOptions\relax
+
+\RequirePackage{xstring}
+\RequirePackage{xparse}
+
+\ifquickderivs@upright
+	\newsavebox\quickderivs@unslant@box
+
+	\NewDocumentCommand{\quickderivs@unslant}{som}{%
+		{%
+			\mbox{%
+				\sbox{\quickderivs@unslant@box}{$#3$}%
+				\hskip\wd\quickderivs@unslant@box%
+				\pdfsave%
+				\IfBooleanTF{#1}{%
+					\IfValueTF{#2}{%
+						\expandafter\pdfsetmatrix{1 #2 0 1}%
+					}{%
+						\pdfsetmatrix{1 -.25 0 1}%
+					}%
+				}{%
+					\IfValueTF{#2}{%
+						\expandafter\pdfsetmatrix{1 0 #2 1}%
+					}{%
+						\pdfsetmatrix{1 0 -.25 1}%
+					}%
+				}%
+				\llap{\usebox{\quickderivs@unslant@box}}%
+				\pdfrestore%
+			}%
+			\kern-0.8pt
+		}%
+	}
+\fi
+
+% Defines quickderivs@isinteger macro if it doesn't exist.
+\newcommand*{\quickderivs@isinteger}[3]{%
+	\edef\quickderivs@isinteger@tmp{\expandafter\detokenize\expandafter{#1}}%
+	\IfStrEq{\quickderivs@isinteger@tmp}{ }{%
+		#3%
+	}{%
+		\IfInteger{\quickderivs@isinteger@tmp}{#2}{#3}%
+	}%
+}
+
+\ifcsname df\endcsname
+  \PackageError{quickderivs}{Command df is already defined}
+\fi
+\ifcsname dv\endcsname
+  \PackageError{quickderivs}{Command dv is already defined}
+\fi
+
+\ifquickderivs@upright
+	\newcommand\dvsetupright{%
+		\gdef \quickderivs@chrs@d {\mathrm{d}}%
+		\gdef \quickderivs@chrs@D {\mathrm{D}}%
+		\gdef \quickderivs@chrs@e {\quickderivs@unslant{\delta}}%
+		\gdef \quickderivs@chrs@p {\quickderivs@unslant{\partial}}%
+	}
+\fi
+\newcommand\dvsetnormal{%
+  \gdef \quickderivs@chrs@d {d}%
+  \gdef \quickderivs@chrs@D {D}%
+  \gdef \quickderivs@chrs@e {\delta}%
+  \gdef \quickderivs@chrs@p {\partial}%
+}
+\gdef \quickderivs@chrs@E {\Delta}
+
+\gdef\quickderivs@chrsspac@d{}
+\gdef\quickderivs@chrsspac@D{}
+\gdef\quickderivs@chrsspac@e{}
+\gdef\quickderivs@chrsspac@E{\!}
+\gdef\quickderivs@chrsspac@p{}
+
+\def\quickderivs@dfchar #1{%
+  \edef\arg{\detokenize{#1}}%
+  % If empty, do default
+  \if\relax\arg\relax%
+    % default is d.
+		\ifquickderivs@defp%
+			\quickderivs@chrs@p%
+		\else%
+			\quickderivs@chrs@d%
+		\fi%
+  \else%
+    \ifcsname quickderivs@chrs@\arg\endcsname%
+      \csname quickderivs@chrs@\arg\endcsname%
+    \else%
+      \PackageError{quickderivs}{Unknown Character Argument}%
+    \fi%
+  \fi%
+}
+
+\def\quickderivs@dfcharspac #1{%
+  \edef\arg{\detokenize{#1}}%
+  % If empty, do default
+  \if\relax\arg\relax%
+    % default is d.
+		\ifquickderivs@defp%
+			\quickderivs@chrsspac@p%
+		\else%
+			\quickderivs@chrsspac@d%
+		\fi%
+  \else%
+    \ifcsname quickderivs@chrsspac@\arg\endcsname%
+      \csname quickderivs@chrsspac@\arg\endcsname%
+    \else%
+      \PackageError{quickderivs}{Unknown Character Argument}%
+    \fi%
+  \fi%
+}
+
+\def\quickderivs@prt{%
+	\advance\quickderivs@idx by -1\relax%
+	\advance\quickderivs@leftidx by 1\relax%
+	\ifquickderivs@didexp^\fi{\StrMid{\quickderivs@arg}{\the\quickderivs@leftidx}{\the\quickderivs@idx}}%
+	\advance\quickderivs@idx by 1\relax%
+	\quickderivs@leftidx=\quickderivs@idx%
+}
+
+\newcount\quickderivs@idx
+\newcount\quickderivs@leftidx
+\newif\ifquickderivs@didexp
+\newif\ifquickderivs@wassemicol
+\newif\ifquickderivs@indv
+\quickderivs@indvfalse
+
+\NewDocumentCommand{\df}{sm!o!s}{%
+	\expandarg%
+  \ensuremath{%
+    % Get character argument
+    \ifquickderivs@indv\else%
+			\edef\quickderivs@chararg{\IfBooleanTF{#4}{\ifquickderivs@defp d\else p\fi}{\IfValueT{#3}{#3}}}%
+      \def\quickderivs@char{%
+        \expandafter\quickderivs@dfchar\quickderivs@chararg{}%
+      }%
+    \fi%
+		\def\quickderivs@arg{#2}%
+    % Get argument length
+    \StrLen{#2}[\arglen]%
+    \ifnum\arglen=0\relax%
+      \PackageError{quickderivs}{Empty Argument in Differential}%
+    \fi%
+    \quickderivs@idx=1%
+    \quickderivs@leftidx=0%
+    \quickderivs@didexpfalse%
+    \loop%
+    \StrChar{#2}{\the\quickderivs@idx}[\thc]%
+    \if\thc,%
+			\ifquickderivs@didexp\else%
+				\quickderivs@char%
+			\fi%
+			\quickderivs@prt%
+			\IfBooleanF{#1}{\,}%
+      \quickderivs@didexpfalse%
+    \else%
+      \if\thc;%
+				\quickderivs@char%
+				\quickderivs@prt%
+        \quickderivs@didexptrue%
+				\quickderivs@wassemicoltrue%
+      \else%
+				\quickderivs@isinteger{\thc}{%
+					\ifquickderivs@didexp\else%
+						\quickderivs@char%
+						\quickderivs@prt%
+						\advance\quickderivs@leftidx by -1\relax%
+						\quickderivs@didexptrue%
+						\quickderivs@wassemicolfalse%
+					\fi%
+				}{%
+					\ifquickderivs@didexp%
+						\ifquickderivs@wassemicol\else%
+							\quickderivs@prt%
+							\IfBooleanF{#1}{\,}%
+							\advance\quickderivs@leftidx by -1\relax%
+							\quickderivs@didexpfalse%
+						\fi%
+					\fi%
+				}%
+      \fi%
+    \fi%
+    \advance\quickderivs@idx by 1\relax%
+    \ifnum\quickderivs@idx > \arglen\relax%
+    \else \repeat%
+		\ifquickderivs@didexp\else%
+			\quickderivs@char%
+		\fi%
+		\quickderivs@prt%
+  }%
+}
+
+\newif\ifquickderivs@nonint
+\newif\ifquickderivs@endloop
+\newcount\quickderivs@expcount
+
+\newcommand{\quickderivs@countexp}[1]{%
+	\expandarg%
+  \StrLen{#1}[\arglen]%
+  \ifnum\arglen=0\relax%
+    \PackageError{quickderivs}{Empty Argument in Differential}%
+  \fi%
+  \quickderivs@idx=1%
+  \quickderivs@expcount=0%
+  \quickderivs@didexpfalse%
+  \quickderivs@nonintfalse%
+  \loop%
+  \StrChar{#1}{\the\quickderivs@idx}[\thc]%
+  \if\thc,%
+    \ifquickderivs@didexp%
+      \advance \quickderivs@leftidx by 1\relax%
+      \advance \quickderivs@idx by -1\relax%
+      \StrMid{#1}{\the\quickderivs@leftidx}{\the\quickderivs@idx}[\intstr]%
+      \quickderivs@isinteger{\intstr}{%
+        \advance \quickderivs@expcount by \intstr\relax%
+      }%
+      {%
+        \quickderivs@noninttrue%
+      }%
+      \advance \quickderivs@idx by 1\relax%
+    \else%
+      \advance \quickderivs@expcount by 1\relax%
+    \fi%
+    \quickderivs@didexpfalse%
+  \else%
+    \if\thc;%
+      \quickderivs@didexptrue%
+      \quickderivs@leftidx=\quickderivs@idx%
+			\quickderivs@wassemicoltrue%
+    \else%
+			\quickderivs@isinteger{\thc}{%
+				\ifquickderivs@didexp\else%
+					\quickderivs@leftidx=\quickderivs@idx%
+					\advance\quickderivs@leftidx by -1\relax%
+					\quickderivs@didexptrue%
+					\quickderivs@wassemicolfalse%
+				\fi%
+			}{%
+				\ifquickderivs@didexp%
+					\ifquickderivs@wassemicol\else%
+						\advance \quickderivs@leftidx by 1\relax%
+						\advance\quickderivs@idx by -1\relax%
+						\StrMid{#1}{\the\quickderivs@leftidx}{\the\quickderivs@idx}[\intstr]%
+						\advance\quickderivs@idx by 1\relax%
+						\quickderivs@leftidx=\quickderivs@idx%
+						\advance\quickderivs@leftidx by -1\relax%
+						\quickderivs@isinteger{\intstr}{%
+							\advance \quickderivs@expcount by \intstr\relax%
+						}%
+						{%
+							\quickderivs@noninttrue%
+						}%
+						\quickderivs@didexpfalse%
+					\fi%
+				\fi%
+			}%
+    \fi%
+  \fi%
+  \advance\quickderivs@idx by 1\relax%
+  \ifnum\quickderivs@idx > \arglen\relax%
+    \quickderivs@endlooptrue%
+  \else%
+    \quickderivs@endloopfalse%
+  \fi%
+  \ifquickderivs@nonint%
+    \quickderivs@endlooptrue%
+  \fi%
+  \ifquickderivs@endloop \else \repeat%
+  \ifquickderivs@nonint%
+  \else%
+    \ifquickderivs@didexp%
+      \advance \quickderivs@leftidx by 1\relax%
+      \advance \quickderivs@idx by -1\relax%
+      \StrMid{#1}{\the\quickderivs@leftidx}{\the\quickderivs@idx}[\intstr]%
+      \quickderivs@isinteger{\intstr}{%
+        \advance \quickderivs@expcount by \intstr\relax%
+      }%
+      {%
+        ^{\StrMid{#1}{\the\quickderivs@leftidx}{\the\quickderivs@idx}[\expstr]}%
+        \quickderivs@noninttrue%
+      }%
+    \else%
+      \advance \quickderivs@expcount by 1\relax%
+    \fi%
+  \fi%
+  \ifquickderivs@nonint%
+  \else%
+    \ifnum\quickderivs@expcount > 1\relax%
+      ^{\quickderivs@charspac\the\quickderivs@expcount}%
+    \fi%
+  \fi%
+}
+
+\NewDocumentCommand{\dv}{soom!o!s}{%
+	\expandarg%
+  \ensuremath{%
+    \edef\quickderivs@chararg{\IfBooleanTF{#6}{\ifquickderivs@defp d\else p\fi}{\IfValueT{#5}{#5}}}%
+    \def\quickderivs@char{%
+      \expandafter\quickderivs@dfchar\quickderivs@chararg{}%
+    }%
+		\def\quickderivs@charspac{%
+			\expandafter\quickderivs@dfcharspac\quickderivs@chararg{}%
+		}%
+    \IfBooleanF{#1}{\frac}%
+    {%
+      \quickderivs@char%
+      \IfValueTF{#3}%
+      {%
+        ^{\quickderivs@charspac#3}%
+      }%
+      {%
+        \quickderivs@countexp{#4}%
+      }%
+			{\IfValueT{#2}{#2}}%
+      \IfBooleanT{#1}{/}%
+    }%
+    {%
+			\quickderivs@indvtrue
+      \df*{#4}%
+			\quickderivs@indvfalse
+    }%
+  }%
+}
+

@@ -1,18 +1,19 @@
-% jpdv.ltx
+% quickderivs-doc.tex
 %
 % Copyright (C) 2026 James Petersen <m@jamespetersen.ca>
 % Licensed under MIT. See LICENSE.
+
 \documentclass{article}
 \usepackage[utf8]{inputenc}
 
-\usepackage[upright]{jpdv}
+\usepackage[upright]{quickderivs}
 \dvsetnormal
 \usepackage[margin=1.5in]{geometry}
 \usepackage{verbatim}
 
-\title{Derivatives using the {\tt jpdv} package}
+\title{Derivatives using the {\tt quickderivs} package}
 \author{James Petersen}
-\date{March 2026}
+\date{March 25th, 2026 (Version 0.1.1)}
 
 \begin{document}
 
@@ -25,7 +26,7 @@ efficiently.
 \begin{itemize}
 	\item \verb|upright|: enables support for upright derivative symbols,
 		such as
-		\makeatletter\(\jp@dv@unslant{\partial}\)\makeatother,
+		\makeatletter\(\quickderivs@unslant{\partial}\)\makeatother,
 		as compared to \(\partial\). These can be toggled
 		using the \verb|\dvsetupright| and \verb|\dvsetnormal| commands.
 		If \verb|upright| is passed, then the style is set
@@ -73,9 +74,9 @@ efficiently.
 			\end{tabular}
 		\end{center}
 		Additional symbol can be added by defining the command
-		\verb|\jp@dv@chrs@|\(\langle\)\textit{new char}\(\rangle\)
+		\verb|\quickderivs@chrs@|\(\langle\)\textit{new char}\(\rangle\)
 		to the desired symbol and
-		\verb|\jp@dv@chrsspac@|\(\langle\)\textit{new char}\(\rangle\)
+		\verb|\quickderivs@chrsspac@|\(\langle\)\textit{new char}\(\rangle\)
 		to the spacing this character should have between it and a superscript.
 
 		The last star parameter toggles between regular and partial derivatives.
@@ -136,7 +137,7 @@ efficiently.
 				\end{tabular}
 			\end{center}
 
-		\item \verb|\dvsetupright| and \verb|dvsetnormal|
+		\item \verb|\dvsetupright| and \verb|\dvsetnormal|
 
 			These commands switch between upright and normal characters for the package.
 			\verb|\dvsetupright| is only defined if the \verb|upright| parameter
