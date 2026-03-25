@@ -1,0 +1,146 @@
+% jpdv.ltx
+%
+% Copyright (C) 2026 James Petersen <m@jamespetersen.ca>
+% Licensed under MIT. See LICENSE.
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+
+\usepackage[upright]{jpdv}
+\dvsetnormal
+\usepackage[margin=1.5in]{geometry}
+\usepackage{verbatim}
+
+\title{Derivatives using the {\tt jpdv} package}
+\author{James Petersen}
+\date{March 2026}
+
+\begin{document}
+
+\maketitle
+
+This package contains commands to typeset mathematical derivatives more
+efficiently.
+
+\section{Options}
+\begin{itemize}
+	\item \verb|upright|: enables support for upright derivative symbols,
+		such as
+		\makeatletter\(\jp@dv@unslant{\partial}\)\makeatother,
+		as compared to \(\partial\). These can be toggled
+		using the \verb|\dvsetupright| and \verb|\dvsetnormal| commands.
+		If \verb|upright| is passed, then the style is set
+		to upright by default.
+
+	\item \verb|partial|: the \verb|\dv| and \verb|\df| commands now
+		default partial derivative symbols. The last star argument
+		now switches to normal derivative symbols.
+\end{itemize}
+
+\section{Commands}
+\begin{itemize}
+	\item	\verb|\dv[*][|\(\langle\)\textit{upper value}\(\rangle\)%
+		\verb|][|\(\langle\)\textit{upper power}\(\rangle\)\verb|]{|%
+		\(\langle\)\textit{lower variable(s)}\(\rangle\)\verb|}[|%
+		\(\langle\)\textit{differential symbol}\(\rangle\)\verb|][*]|
+
+		This is the main command of the package. It typesets derivatives in general.
+		The only mandatory parameter is the lower variables. With a single
+		variable, it typesets a normal derivative: \verb|\dv{x}| becomes
+		\[
+			\dv x.
+		\]
+
+		The differential symbol parameter changes the differential symbol,
+		with the following supported parameters:
+		\verb|d D e E p|. They produce the following outputs.
+		\begin{center}
+			\begin{tabular}{cccccc}
+				&\verb|d|&\verb|D|&\verb|e|&\verb|E|&\verb|p|\\[1em]
+				\dvsetupright
+				upright
+				&\(\displaystyle\dv x[d]\)
+				&\(\displaystyle\dv x[D]\)
+				&\(\displaystyle\dv x[e]\)
+				&\(\displaystyle\dv x[E]\)
+				&\(\displaystyle\dv x[p]\)\\[2em]
+				normal
+				\dvsetnormal
+				&\(\displaystyle\dv x[d]\)
+				&\(\displaystyle\dv x[D]\)
+				&\(\displaystyle\dv x[e]\)
+				&\(\displaystyle\dv x[E]\)
+				&\(\displaystyle\dv x[p]\)
+			\end{tabular}
+		\end{center}
+		Additional symbol can be added by defining the command
+		\verb|\jp@dv@chrs@|\(\langle\)\textit{new char}\(\rangle\)
+		to the desired symbol and
+		\verb|\jp@dv@chrsspac@|\(\langle\)\textit{new char}\(\rangle\)
+		to the spacing this character should have between it and a superscript.
+
+		The last star parameter toggles between regular and partial derivatives.
+		It takes priority over the differential symbol parameter.
+		Setting the \verb|partial| parameter of the package makes
+		derivatives default to partial derivatives, and switch to regular
+		derivatives with the star.
+
+		The lower variable(s) parameter can take many variables in a row,
+		delimited by commas: \verb|\dv{x,y}*| becomes
+		\[
+			\dv{x,y}*.
+		\]
+		Simply specifying a number will make that the power of the preceding
+		variable: \verb|\dv{x2}| becomes
+		\[
+			\dv{x2}.
+		\]
+		Numbers can be used as separators between multiple variables as well:
+		\verb|\dv{x2y3}*| becomes
+		\[
+			\dv{x2y3}*.
+		\]
+		To instead have the number as a part of the derivative, or any
+		other complex command, enclose it in square brackets:
+		\verb|\dv{{(2x)},{\bar{y}}}*| becomes
+		\[
+			\dv{{(2x)},{\bar y}}*.
+		\]
+		To specify a nonstandard superscript, use a semicolon:
+		\verb|\dv{x;r,y;s}*| becomes
+		\[
+			\dv{x;r,y;s}*.
+		\]
+
+		The upper value is self-explanatory: \verb|\dv[f]{x}| becomes
+		\[
+			\dv[f]x.
+		\]
+		The upper power is also simple. Expanding on an earlier example,
+		\verb|\dv[][r+s]{x;r,y;s}*| becomes
+		\[
+			\dv[][r+s]{x;r,y;s}*.
+		\]
+		Finally, the first star writes the fractions inline:
+		\verb|\dv*[f]{x}| becomes \(\dv*[f]x\).
+
+	\item \verb|\df[*]{|\(\langle\)\textit{lower variable(s)}\(\rangle\)%
+		\verb|}[|\(\langle\)\textit{differential symbol}\verb|][*]|
+
+			The latter three parameters are identical to those in the \verb|\dv|
+			command. The first star controls the spacing between the differentials:
+
+			\begin{center}
+				\begin{tabular}{cc}
+					with star&without star\\
+					\df{x,y,z}&\df*{x,y,z}
+				\end{tabular}
+			\end{center}
+
+		\item \verb|\dvsetupright| and \verb|dvsetnormal|
+
+			These commands switch between upright and normal characters for the package.
+			\verb|\dvsetupright| is only defined if the \verb|upright| parameter
+			is supplied to the package.
+\end{itemize}
+
+\end{document}
