@@ -1,6 +1,6 @@
 # `quickderivs` LaTeX Package
 
-2026-03-25 v0.1.1
+2026-07-01 v0.1.2
 
 This is a small LaTeX package containing macros allowing one to typeset
 mathematical derivatives quickly, similar to esdiff. It has one primary command, `\dv`, which does

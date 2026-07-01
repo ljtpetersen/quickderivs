@@ -4,7 +4,7 @@
 % Licensed under MIT. See LICENSE.
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{quickderivs}[2026-03-25 v0.1.1 Derivatives and Differentials]
+\ProvidesPackage{quickderivs}[2026-07-01 v0.1.2 Derivatives and Differentials]
 
 \newif\ifquickderivs@upright
 \newif\ifquickderivs@defp
@@ -17,35 +17,33 @@
 \RequirePackage{xstring}
 \RequirePackage{xparse}
 
-\ifquickderivs@upright
-	\newsavebox\quickderivs@unslant@box
+\newsavebox\quickderivs@unslant@box
 
-	\NewDocumentCommand{\quickderivs@unslant}{som}{%
-		{%
-			\mbox{%
-				\sbox{\quickderivs@unslant@box}{$#3$}%
-				\hskip\wd\quickderivs@unslant@box%
-				\pdfsave%
-				\IfBooleanTF{#1}{%
-					\IfValueTF{#2}{%
-						\expandafter\pdfsetmatrix{1 #2 0 1}%
-					}{%
-						\pdfsetmatrix{1 -.25 0 1}%
-					}%
+\NewDocumentCommand{\quickderivs@unslant}{som}{%
+	{%
+		\mbox{%
+			\sbox{\quickderivs@unslant@box}{$#3$}%
+			\hskip\wd\quickderivs@unslant@box%
+			\pdfsave%
+			\IfBooleanTF{#1}{%
+				\IfValueTF{#2}{%
+					\expandafter\pdfsetmatrix{1 #2 0 1}%
 				}{%
-					\IfValueTF{#2}{%
-						\expandafter\pdfsetmatrix{1 0 #2 1}%
-					}{%
-						\pdfsetmatrix{1 0 -.25 1}%
-					}%
+					\pdfsetmatrix{1 -.25 0 1}%
 				}%
-				\llap{\usebox{\quickderivs@unslant@box}}%
-				\pdfrestore%
+			}{%
+				\IfValueTF{#2}{%
+					\expandafter\pdfsetmatrix{1 0 #2 1}%
+				}{%
+					\pdfsetmatrix{1 0 -.25 1}%
+				}%
 			}%
-			\kern-0.8pt
+			\llap{\usebox{\quickderivs@unslant@box}}%
+			\pdfrestore%
 		}%
-	}
-\fi
+		\kern-0.8pt
+	}%
+}
 
 % Defines quickderivs@isinteger macro if it doesn't exist.
 \newcommand*{\quickderivs@isinteger}[3]{%
@@ -64,21 +62,24 @@
   \PackageError{quickderivs}{Command dv is already defined}
 \fi
 
-\ifquickderivs@upright
-	\newcommand\dvsetupright{%
-		\gdef \quickderivs@chrs@d {\mathrm{d}}%
-		\gdef \quickderivs@chrs@D {\mathrm{D}}%
-		\gdef \quickderivs@chrs@e {\quickderivs@unslant{\delta}}%
-		\gdef \quickderivs@chrs@p {\quickderivs@unslant{\partial}}%
-	}
-\fi
 \newcommand\dvsetnormal{%
-  \gdef \quickderivs@chrs@d {d}%
-  \gdef \quickderivs@chrs@D {D}%
-  \gdef \quickderivs@chrs@e {\delta}%
-  \gdef \quickderivs@chrs@p {\partial}%
+  \gdef\quickderivs@chrs@d {d}%
+  \gdef\quickderivs@chrs@D {D}%
+  \gdef\quickderivs@chrs@e {\delta}%
+  \gdef\quickderivs@chrs@p {\partial}%
 }
-\gdef \quickderivs@chrs@E {\Delta}
+\newcommand\dvsetupright{%
+	\gdef\quickderivs@chrs@d{\mathrm{d}}%
+	\gdef\quickderivs@chrs@D{\mathrm{D}}%
+	\gdef\quickderivs@chrs@e{\quickderivs@unslant{\delta}}%
+	\gdef\quickderivs@chrs@p{\quickderivs@unslant{\partial}}%
+}
+\gdef\quickderivs@chrs@E{\Delta}
+\ifquickderivs@upright
+	\dvsetupright
+\else
+	\dvsetnormal
+\fi
 
 \gdef\quickderivs@chrsspac@d{}
 \gdef\quickderivs@chrsspac@D{}
